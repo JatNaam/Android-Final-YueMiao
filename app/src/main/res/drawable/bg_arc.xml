@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+<!--  带圆弧的背景，实际上是一个圆，只显示一部分  -->
+    <item>
+        <shape>
+            <solid android:color="#f7f8fa" />
+        </shape>
+    </item>
+
+    <item
+        android:end="-100dp"
+        android:gravity="top"
+        android:start="-100dp"
+        android:top="-100dp">
+        <shape
+            android:shape="oval"
+            android:useLevel="true">
+            <gradient
+                android:startColor="#1adaab"
+                android:endColor="#0bb6b0"
+                android:angle="0"/>
+            <size android:height="330dp" />
+        </shape>
+    </item>
+
+</layer-list>
