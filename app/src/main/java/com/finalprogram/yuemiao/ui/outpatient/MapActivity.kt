@@ -1,7 +1,11 @@
 package com.finalprogram.yuemiao.ui.outpatient
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
@@ -16,6 +20,8 @@ import com.baidu.mapapi.search.core.PoiDetailInfo
 import com.baidu.mapapi.search.poi.*
 import com.finalprogram.yuemiao.BaseActivity
 import com.finalprogram.yuemiao.MainActivity
+import com.finalprogram.yuemiao.MyApplication
+import com.finalprogram.yuemiao.R
 import com.finalprogram.yuemiao.databinding.ActivityMapBinding
 import com.google.gson.Gson
 
@@ -61,12 +67,43 @@ class MapActivity : BaseActivity() {
             setResult(RESULT_OK, intent)
             finish()
         }
+
         // 手动刷新定位
         binding.relocate.setOnClickListener {
             mLocationClient!!.stop()
             binding.tvAdd.text = "定位中"
             requestLocation()
         }
+
+        // 设置搜索栏背景颜色（需要动态设置，在布局文件设置会无效）
+        binding.searchView.setBackgroundResource(R.drawable.searchview_shape)
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // 当用户点击搜索执行操作
+                /**
+                 *  PoiCiySearchOption 设置检索属性
+                 *  city 检索城市
+                 *  keyword 检索内容关键字
+                 *  pageNum 分页页码
+                 */
+                mPoiSearch!!.searchInCity(
+                    PoiCitySearchOption()
+                        .city(query) //必填
+                        .keyword("健康服务中心") //必填
+                        .pageNum(0)
+                        .pageCapacity(10)
+                )
+                // 收起软键盘
+                hideKeyboard(binding.searchView)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // 当用户输入文本时执行操作
+                return true
+            }
+        })
+
         val layoutManager = LinearLayoutManager(this)
         binding.poiRecycleList.layoutManager = layoutManager
 
@@ -183,6 +220,18 @@ class MapActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * 收起软键盘
+     */
+    fun hideKeyboard(view: View) {
+        val inputMethodManager =
+            this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(
+            view.windowToken,
+            InputMethodManager.HIDE_NOT_ALWAYS
+        )
     }
 
     // 管理MapView的生命周期

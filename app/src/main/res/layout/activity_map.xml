@@ -54,7 +54,7 @@
             android:id="@+id/relocate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="地址："
+            android:text="当前地址："
             android:textColor="#ffffff"
             android:textSize="20sp"
             app:drawableStartCompat="@drawable/refresh" />
@@ -66,8 +66,16 @@
             android:layout_gravity="center_vertical"
             android:text="定位中"
             android:textColor="#ffffff" />
-
     </LinearLayout>
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:imeOptions="actionSearch"
+        app:defaultQueryHint="请输入城市名称查询"
+        app:iconifiedByDefault="false"
+        app:queryBackground="@null"
+        app:submitBackground="@null" />
 
     <!--百度地图控件-->
     <com.baidu.mapapi.map.MapView
@@ -77,7 +85,6 @@
         android:layout_weight="2"
         android:clickable="true"
         android:focusable="true" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/poi_recycle_list"
         android:layout_width="match_parent"

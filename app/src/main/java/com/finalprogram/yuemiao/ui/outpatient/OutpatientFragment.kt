@@ -96,9 +96,9 @@ class OutpatientFragment : Fragment() {
 
         // 设置搜索栏背景颜色（需要动态设置，在布局文件设置会无效）
         binding.searchView.setBackgroundResource(R.drawable.searchview_shape)
+
         val layoutManager = LinearLayoutManager(activity)
         binding.outpatientRecycleList.layoutManager = layoutManager
-
         binding.citySelect.setOnClickListener {
             // 通过PermissionX插件动态申请定位需要的权限
             PermissionX.init(this)
