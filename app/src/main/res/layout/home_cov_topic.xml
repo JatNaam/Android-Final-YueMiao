@@ -1,32 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:background="@color/white"
-        android:padding="10dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginRight="20dp"
-            android:text="新冠专题"
-            android:textColor="@color/black"
-            android:textSize="22dp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="接种新冠疫苗 守护健康"
-            android:textColor="#9f9f9f" />
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,17 +11,41 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:background="@color/white"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="20dp"
+                android:text="新冠专题"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="接种新冠疫苗 守护健康"
+                android:textColor="#9f9f9f" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginBottom="10dp"
             android:background="@color/white"
             android:gravity="center_vertical"
-            android:padding="20dp"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginBottom="10dp">
+            android:padding="20dp">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="15dp"
-                android:src="@drawable/book1"/>
+                android:layout_marginEnd="15dp"
+                android:src="@drawable/book1" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -58,51 +57,45 @@
                     android:layout_height="wrap_content"
                     android:text="个人新冠疫苗接种预约"
                     android:textColor="@color/black"
-                    android:textSize="18dp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="内地居民预约新冠疫苗"
-                    android:textSize="14dp" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="right">
+                android:gravity="right"
+                tools:ignore="RtlHardcoded">
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:src="@drawable/arrow" />
             </LinearLayout>
 
         </LinearLayout>
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginBottom="10dp"
             android:background="@color/white"
             android:gravity="center_vertical"
-            android:padding="20dp"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginBottom="10dp">
+            android:padding="20dp">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="15dp"
-                android:src="@drawable/book2"/>
+                android:layout_marginEnd="15dp"
+                android:src="@drawable/book2" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -114,51 +107,46 @@
                     android:layout_height="wrap_content"
                     android:text="团体新冠疫苗接种预约"
                     android:textColor="@color/black"
-                    android:textSize="18dp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="团体接种组织扫码预约"
-                    android:textSize="14dp" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="right">
+                android:gravity="right"
+                tools:ignore="RtlHardcoded">
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:src="@drawable/arrow" />
             </LinearLayout>
 
         </LinearLayout>
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginBottom="10dp"
             android:background="@color/white"
             android:gravity="center_vertical"
-            android:padding="20dp"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginBottom="10dp">
+            android:padding="20dp">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="15dp"
-                android:src="@drawable/book3"/>
+                android:layout_marginEnd="15dp"
+                android:src="@drawable/book3" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -170,30 +158,30 @@
                     android:layout_height="wrap_content"
                     android:text="新冠疫苗报名登记"
                     android:textColor="@color/black"
-                    android:textSize="18dp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="疫苗预约不上可以先报名"
-                    android:textSize="14dp" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="right">
+                android:gravity="right"
+                tools:ignore="RtlHardcoded">
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:src="@drawable/arrow" />
             </LinearLayout>
 
         </LinearLayout>
 
     </LinearLayout>
-
-</LinearLayout>
+</merge>

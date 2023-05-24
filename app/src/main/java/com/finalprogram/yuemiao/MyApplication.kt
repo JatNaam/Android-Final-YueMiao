@@ -3,6 +3,9 @@ package com.finalprogram.yuemiao
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import com.baidu.location.LocationClient
+import com.baidu.mapapi.CoordType
+import com.baidu.mapapi.SDKInitializer
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 
@@ -12,6 +15,11 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         context = applicationContext
+        // 一定要初始化前设置，百度定位SDK隐私政策
+        SDKInitializer.setAgreePrivacy(context, true)
+        LocationClient.setAgreePrivacy(true)
+        SDKInitializer.initialize(context)
+        SDKInitializer.setCoordType(CoordType.BD09LL)
     }
 
     companion object {

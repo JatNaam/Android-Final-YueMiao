@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--我的页面的菜单列表的item-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="65dp"
     android:layout_marginBottom="8dp"
@@ -18,11 +20,12 @@
         android:id="@+id/text_menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingRight="10dp"
+        android:paddingEnd="10dp"
         android:text="受种者信息"
         android:textColor="@color/black"
-        android:textSize="18dp"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:drawableRight="@drawable/arrow"/>
+        app:drawableRightCompat="@drawable/arrow"
+        tools:ignore="RtlSymmetry" />
 
 </LinearLayout>

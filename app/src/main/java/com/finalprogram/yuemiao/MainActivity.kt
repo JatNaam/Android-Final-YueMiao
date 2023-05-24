@@ -37,6 +37,7 @@ class MainActivity : BaseActivity() {
     )
 
     private var user: User? = null
+    private var comeFromLogin = false
 
     private var receiver: NetWorkStatusChangerReceiver? = null
 
@@ -47,7 +48,6 @@ class MainActivity : BaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        var comeFromLogin = false
         // 登录活动跳转传递的账号信息
         user = intent.getSerializableExtra("userData") as User?
         if (user != null) {
@@ -67,7 +67,7 @@ class MainActivity : BaseActivity() {
                     }
             }
         }
-        initViewPager(comeFromLogin)
+        initViewPager()
     }
 
     override fun onDestroy() {
@@ -78,7 +78,7 @@ class MainActivity : BaseActivity() {
     /**
      * 初始化viewpager2和tabLayout
      */
-    private fun initViewPager(comeFromLogin: Boolean) {
+    private fun initViewPager() {
         //viewPager2的适配器
         binding.viewPager.adapter = TabStateAdapter(
             this.supportFragmentManager,
@@ -128,10 +128,12 @@ class MainActivity : BaseActivity() {
         }
     }
 
+
     /**
      * 给子fragment传值，和fragment的onAttach方法搭配使用是最佳的方法，bundle传值无法即时获得
      */
     fun getUser(): User? {
         return user
     }
+
 }

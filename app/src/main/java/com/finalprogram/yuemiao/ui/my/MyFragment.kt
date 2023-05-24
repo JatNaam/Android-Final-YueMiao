@@ -3,11 +3,9 @@ package com.finalprogram.yuemiao.ui.my
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -61,13 +59,7 @@ class MyFragment : Fragment() {
         binding.menuRecycleList.layoutManager = layoutManager
         binding.menuRecycleList.adapter = MenuAdapter(menuList)
 
-        binding.userAvatar.setOnClickListener {
-            login()
-        }
-        binding.userName.setOnClickListener {
-            login()
-        }
-
+        binding.loginBtn.setOnClickListener { login() }
         // 取出登录活动发送到主活动的数据
         if (user != null)
             loadUI()
@@ -107,11 +99,12 @@ class MyFragment : Fragment() {
                 .into(it)
         }
         binding.userName.text = user!!.userName
-        // 绑定注销事件
-        binding.setting.setOnClickListener {
+        // 使退出按钮显示并绑定注销事件
+        binding.logoutBtn.visibility = View.VISIBLE
+        binding.logoutBtn.isClickable = true
+        binding.logoutBtn.setOnClickListener {
             logout()
         }
-        binding.userAvatar.setOnClickListener(null)
-        binding.userName.setOnClickListener(null)
+        binding.loginBtn.setOnClickListener(null)
     }
 }

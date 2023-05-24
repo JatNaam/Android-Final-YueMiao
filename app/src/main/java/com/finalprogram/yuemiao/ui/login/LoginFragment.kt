@@ -132,18 +132,14 @@ class LoginFragment : Fragment() {
                             }
                         }
                     }
-                } else {
-                    Toast.makeText(
-                        MyApplication.context, "请检查你的输入信息是否正确",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } else {
-                Toast.makeText(
-                    MyApplication.context, "网络异常",
+                } else Toast.makeText(
+                    MyApplication.context, "请检查你的输入信息是否正确",
                     Toast.LENGTH_SHORT
                 ).show()
-            }
+            } else Toast.makeText(
+                MyApplication.context, "网络异常",
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         binding.registerBtn.setOnClickListener {

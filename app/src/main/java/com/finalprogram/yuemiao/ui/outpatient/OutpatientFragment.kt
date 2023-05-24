@@ -1,20 +1,27 @@
 package com.finalprogram.yuemiao.ui.outpatient
 
+import android.Manifest
 import android.content.Context
-import android.graphics.Color
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.baidu.mapapi.search.core.PoiDetailInfo
 import com.finalprogram.yuemiao.MainActivity
+import com.finalprogram.yuemiao.MyApplication
 import com.finalprogram.yuemiao.R
 import com.finalprogram.yuemiao.database.entity.User
 import com.finalprogram.yuemiao.databinding.FragmentOutpatientBinding
-import com.finalprogram.yuemiao.ui.my.Menu
-import java.util.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.permissionx.guolindev.PermissionX
 
 
 class OutpatientFragment : Fragment() {
@@ -24,43 +31,9 @@ class OutpatientFragment : Fragment() {
 
     private var user: User? = null
 
-    // 不可变列表List
-    private val outpatients: List<Outpatient> = listOf(
-        Outpatient(
-            "深圳市南山区医疗集团总部龙瑞佳园社区健康服务中心",
-            "门诊地址:兴海大道1048号龙瑞佳园山海居2栋2层16~19号房",
-            "联系电话:0755-26918795",
-            "距离：6.9km"
-        ),
-        Outpatient(
-            "南山区医疗集团总部麻砌社区健康服务中心",
-            "门诊地址: 深圳市南山区西丽麻工业北区商住楼一楼",
-            "联系电话: 0755-86113133",
-            "距离：7.7km"
-        ),
-        Outpatient(
-            "南山医疗集团总部福光社区健康服务中心",
-            "门诊地址:南山区留仙路1998号崇文花园5A临街层1-2层",
-            "联系电话: 26916892",
-            "距离：9.9km"
-        ),
-        Outpatient(
-            "蛇口人民医院犬伤门诊",
-            "门诊地址:深圳市南山区招商街道南山区蛇口工业七路36号",
-            "联系电话: 0755-21606999",
-            "距离：5.9km"
-        ),
-    )
+    private var location: Location? = null
 
-    private val outpatientList: MutableList<Outpatient> = mutableListOf()
-
-    private fun initOutpatientList() {
-        val random = Random()
-        for (i in 0..10) {
-            val index = random.nextInt(outpatients.size)
-            outpatientList.add(i, outpatients[index])
-        }
-    }
+    private var poiList: MutableList<PoiDetailInfo> = mutableListOf()
 
     companion object {
         fun newInstance(): OutpatientFragment {
@@ -73,6 +46,7 @@ class OutpatientFragment : Fragment() {
      */
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        Log.d("OutpatientFragment", "onAttach")
         (context as MainActivity).getUser().let {
             this.user = it
         }
@@ -84,14 +58,90 @@ class OutpatientFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentOutpatientBinding.inflate(inflater, container, false)
+
+        Log.d("OutpatientFragment", "onCreate")
+
+        // 从定位活动返回触发的回调方法，替代了在API29遗弃的startActivityForResult和onActivityResult的方法
+        // 返回不是通过活动跳转来实现，而是通过把栈顶活动从活动栈出栈更新栈顶活动来实现，
+        // 讲解一下为什么不用活动跳转实现返回操作：
+        /*
+        * 如果通过活动跳转来实现返回操作的话，默认跳转则会创建的新的活动实例来入栈，此时从MapActivity返回的
+        * MainActivity不是我们的目的活动，我们的目标活动还在栈底；若要跳转会我们的目标MainActivity的话，可
+        * 以将Intent的跳转模式设置为SingleTask模式，虽然该方法实现了我们的目的，但是该方法会使MainActivity
+        * 重新创建，使UI和数据都重新渲染，这样会把活动上嵌套的Fragment销毁并重建，无法返回到MainActivity上的
+        * viewpager对应的页面。
+        * 因此我们不能使用活动跳转来实现返回操作
+        * */
+        val activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            if (it.resultCode == AppCompatActivity.RESULT_OK) {
+                //获取返回的结果
+                location = it.data!!.getSerializableExtra("location") as Location?
+                Log.d("MainActivity-OutpatientFragment", location.toString())
+                // 渲染返回的位置信息到UI
+                binding.city.text = location!!.city
+                binding.region.text = location!!.district
+                binding.latitudeLongitude.text =
+                    String.format("经纬度(%.2f,%.2f)", location!!.longitude, location!!.latitude)
+                // 解析返回的POI列表
+                val gson = Gson()
+                val poiStr = it.data!!.getStringExtra("poi") as String
+                Log.d("MainActivity-OutpatientFragment", poiStr)
+                val type = object : TypeToken<MutableList<PoiDetailInfo>>() {}.type
+                poiList.addAll(gson.fromJson(poiStr, type))
+                binding.outpatientRecycleList.adapter = OutpatientAdapter(poiList, location)
+            }
+        }
+
         // 设置搜索栏背景颜色（需要动态设置，在布局文件设置会无效）
         binding.searchView.setBackgroundResource(R.drawable.searchview_shape)
-        initOutpatientList()
         val layoutManager = LinearLayoutManager(activity)
         binding.outpatientRecycleList.layoutManager = layoutManager
-        binding.outpatientRecycleList.adapter = OutpatientAdapter(outpatientList)
+
+        binding.citySelect.setOnClickListener {
+            // 通过PermissionX插件动态申请定位需要的权限
+            PermissionX.init(this)
+                .permissions(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_WIFI_STATE,
+                    Manifest.permission.CHANGE_WIFI_STATE
+                )
+                .request { allGranted, grantedList, deniedList ->
+                    if (allGranted) {
+                        Log.d("Location Grant：", grantedList.toString())
+                        val intent = Intent(context, MapActivity::class.java)
+                        // 新的跳转方法
+                        activityResultLauncher.launch(intent)
+                    } else {
+                        Toast.makeText(
+                            MyApplication.context,
+                            " You denied $deniedList",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+        }
 
         return binding.root
+    }
+
+    /**
+     * 获取焦点，即对应的viewpager页面对用户可见
+     */
+    override fun onResume() {
+        super.onResume()
+        Log.d("OutpatientFragment", "onResume")
+
+    }
+
+    /**
+     * 失去焦点
+     */
+    override fun onPause() {
+        super.onPause()
+        Log.d("OutpatientFragment", "onPause")
     }
 
 }

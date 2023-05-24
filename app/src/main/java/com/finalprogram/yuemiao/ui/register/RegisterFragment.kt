@@ -59,11 +59,7 @@ class RegisterFragment : Fragment() {
         _binding = FragmentRegisterBinding.inflate(inflater, container, false)
         val activity = activity
         // 返回键
-        binding.backLogin.setOnClickListener {
-            val intent = Intent(context, LoginActivity::class.java)
-            startActivity(intent)
-            activity?.finish() //跳转后，销毁返回键的日志
-        }
+        binding.backLogin.setOnClickListener { activity?.finish() }
         // 获取数据库的Dao对象
         val userDao = AppDatabase.getDatabase(MyApplication.context).getUserDao()
         // 表单验证
@@ -101,10 +97,10 @@ class RegisterFragment : Fragment() {
                         MyApplication.context, "请检查你的网络状态!",
                         Toast.LENGTH_SHORT
                     ).show()
-                /**
-                 * 数据库操作必须要在子线程进行
-                 */
-                thread {
+                else thread {
+                    /**
+                     * 数据库操作必须要在子线程进行
+                     */
                     // 查询该账号是否已被占用
                     val user: User? = userDao.loadUser(account)
                     if (user == null) {
@@ -122,6 +118,8 @@ class RegisterFragment : Fragment() {
                             putExtra("registerAccount", account)
                             putExtra("STATUS", "REGISTER")
                         }
+                        // 这里的上层活动的UI和数据没有什么需要保留的，直接以SingleTask的模式跳转活动即可
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         startActivity(intent)
                         activity?.finish() //跳转后，销毁返回键的日志
                     } else
