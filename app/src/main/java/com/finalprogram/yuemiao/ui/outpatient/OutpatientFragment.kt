@@ -89,7 +89,18 @@ class OutpatientFragment : Fragment() {
                 val poiStr = it.data!!.getStringExtra("poi") as String
                 Log.d("MainActivity-OutpatientFragment", poiStr)
                 val type = object : TypeToken<MutableList<PoiDetailInfo>>() {}.type
+                // 更新列表
+                poiList.clear()
                 poiList.addAll(gson.fromJson(poiStr, type))
+                // 将列表升序排序
+                poiList.sortBy { it1 ->
+                    return@sortBy OutpatientAdapter.getDistance(
+                        location!!.latitude,
+                        location!!.longitude,
+                        it1.location.latitude,
+                        it1.location.longitude
+                    )
+                }
                 binding.outpatientRecycleList.adapter = OutpatientAdapter(poiList, location)
             }
         }
