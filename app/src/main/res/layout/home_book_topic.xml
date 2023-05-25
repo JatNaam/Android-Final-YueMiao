@@ -145,6 +145,7 @@
                 app:drawableTopCompat="@drawable/record1" />
 
             <TextView
+                android:id="@+id/inoculation_prove"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -153,6 +154,7 @@
                 app:drawableTopCompat="@drawable/voucher" />
 
             <TextView
+                android:id="@+id/inoculation_refer"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

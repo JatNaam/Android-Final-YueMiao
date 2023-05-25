@@ -144,4 +144,9 @@ class OutpatientFragment : Fragment() {
         Log.d("OutpatientFragment", "onPause")
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
 }

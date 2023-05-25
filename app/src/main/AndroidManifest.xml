@@ -13,13 +13,14 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <!--百度定位所需要权限，前面2个是LOCATE权限组的2个危险权限-->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!--百度定位所需要的普通权限-->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-
-
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <!--  前台服务权限  -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!--  usesCleartextTraffic允许HTTP请求  -->
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -29,9 +30,17 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.YueMiao"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <!--    自定义下载服务    -->
+        <service
+            android:name=".service.DownloadService"
+            android:enabled="true" />
         <!--    百度定位服务    -->
-        <service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote"/>
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote" />
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="jIGuGVbbSTGs99HkyhrvP4G7cWGxnw9l" />
@@ -39,6 +48,7 @@
         <activity android:name=".ui.login.LoginActivity" />
         <activity android:name=".ui.register.RegisterActivity" />
         <activity android:name=".ui.outpatient.MapActivity" />
+        <activity android:name=".ui.home.ReferActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -115,8 +115,8 @@ class MainActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-//        receiver = NetWorkStatusChangerReceiver() //创建广播接受器对象
-//        registerReceiver(receiver, intentFilter) //动态注册广播接收器
+        receiver = NetWorkStatusChangerReceiver() //创建广播接受器对象
+        registerReceiver(receiver, intentFilter) //动态注册广播接收器
     }
 
     override fun onPause() {

@@ -74,6 +74,11 @@ class MyFragment : Fragment() {
         super.onResume()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     /**
      * 跳转至登录活动
      */

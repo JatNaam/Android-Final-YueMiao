@@ -49,8 +49,12 @@ dependencies {
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     /*百度sdk*/
-    implementation files('libs\\BaiduLBS_Android.jar')
+    implementation files('libs/BaiduLBS_Android.jar')
+
+    /*json解析*/
     implementation 'com.google.code.gson:gson:2.10.1'
+    /*网络请求*/
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
