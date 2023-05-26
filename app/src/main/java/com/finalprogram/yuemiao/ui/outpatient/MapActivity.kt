@@ -20,7 +20,6 @@ import com.baidu.mapapi.search.core.PoiDetailInfo
 import com.baidu.mapapi.search.poi.*
 import com.finalprogram.yuemiao.BaseActivity
 import com.finalprogram.yuemiao.MainActivity
-import com.finalprogram.yuemiao.MyApplication
 import com.finalprogram.yuemiao.R
 import com.finalprogram.yuemiao.databinding.ActivityMapBinding
 import com.google.gson.Gson
@@ -107,9 +106,11 @@ class MapActivity : BaseActivity() {
         val layoutManager = LinearLayoutManager(this)
         binding.poiRecycleList.layoutManager = layoutManager
 
+        // 创建POI检索实例
         mPoiSearch = PoiSearch.newInstance()
-        // POI检索的回调方法
-        val listener: OnGetPoiSearchResultListener = object : OnGetPoiSearchResultListener {
+        // 设置POI检索的回调
+        mPoiSearch!!.setOnGetPoiSearchResultListener(object : OnGetPoiSearchResultListener {
+            // POI检索结果的回调
             override fun onGetPoiResult(poiResult: PoiResult) {
                 binding.poiRecycleList.adapter = PoiAdapter(poiResult.allPoi)
                 // 检索poi结果的详细信息
@@ -131,10 +132,8 @@ class MapActivity : BaseActivity() {
 
             //废弃
             @Deprecated("Deprecated in Java")
-            override fun onGetPoiDetailResult(poiDetailResult: PoiDetailResult) {
-            }
-        }
-        mPoiSearch!!.setOnGetPoiSearchResultListener(listener)
+            override fun onGetPoiDetailResult(poiDetailResult: PoiDetailResult){}
+        })
 
         try {
             requestLocation()
@@ -146,47 +145,44 @@ class MapActivity : BaseActivity() {
 
     @Throws(Exception::class)
     private fun requestLocation() {
-        //初始化
+        // 初始化地图组件
         baiduMap = binding.bmapView.map
-        mLocationClient = LocationClient(this)
         // 开启定位图层
         baiduMap!!.isMyLocationEnabled = true
-
+        // 初始化定位服务
+        mLocationClient = LocationClient(this)
+        // 定位参数的配置
         val option = LocationClientOption()
         option.openGps = true
-        //设置扫描时间间隔，设置0表示只定位一次
-        option.setScanSpan(0)
+        option.setScanSpan(0) //设置扫描时间间隔，设置0表示只定位一次
         //设置定位模式，三选一
         option.locationMode = LocationClientOption.LocationMode.Hight_Accuracy
-        /*option.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
-        option.setLocationMode(LocationClientOption.LocationMode.Device_Sensors);*/
-        //设置需要地址信息
-        option.setIsNeedAddress(true)
-        // 位置语义化结果
-        option.setIsNeedLocationDescribe(true)
-        // POI结果
-        option.setIsNeedLocationPoiList(true)
+//        option.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
+//        option.setLocationMode(LocationClientOption.LocationMode.Device_Sensors);
+        option.setIsNeedAddress(true) //设置需要地址信息
+        option.setIsNeedLocationDescribe(true) // 位置语义化结果
+        option.setIsNeedLocationPoiList(true) // 周围POI结果
 
         // 注册LocationListener监听器
         mLocationClient!!.registerLocationListener(MyLocationListener())
         //保存定位参数
         mLocationClient!!.locOption = option
+        // 启动定位服务
         mLocationClient!!.start()
     }
 
     //内部类，百度位置监听器
     inner class MyLocationListener : BDAbstractLocationListener() {
         override fun onReceiveLocation(bdLocation: BDLocation) {
-
+            // 渲染当前详情地址到UI
             binding.tvAdd.text = bdLocation.addrStr
-
+            // 保留当前位置城市、区县和经纬度
             location = Location(
                 bdLocation.city,
                 bdLocation.district,
                 bdLocation.longitude,
                 bdLocation.latitude
             )
-
             /**
              *  PoiCiySearchOption 设置检索属性
              *  city 检索城市
@@ -200,7 +196,7 @@ class MapActivity : BaseActivity() {
                     .pageNum(0)
                     .pageCapacity(10)
             )
-
+            // 显示自身位置的蓝点箭头
             val locData = MyLocationData.Builder()
                 .accuracy(bdLocation.radius)// 设置定位数据的精度信息，单位：米
                 .direction(bdLocation.direction) // 此处设置开发者获取到的方向信息，顺时针0-360
@@ -209,15 +205,14 @@ class MapActivity : BaseActivity() {
                 .build()
             // 设置定位数据, 只有先允许定位图层后设置数据才会生效
             baiduMap!!.setMyLocationData(locData)
-
-            if (bdLocation.locType == BDLocation.TypeGpsLocation || bdLocation.locType == BDLocation.TypeNetWorkLocation) {
-                if (isFirstLocate) {
-                    isFirstLocate = false
-                    val latLng = LatLng(bdLocation.latitude, bdLocation.longitude)
-                    val builder = MapStatus.Builder()
-                    builder.target(latLng).zoom(20.0f)
-                    baiduMap!!.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()))
-                }
+            if (bdLocation.locType == BDLocation.TypeGpsLocation ||
+                bdLocation.locType == BDLocation.TypeNetWorkLocation
+            ) if (isFirstLocate) {
+                isFirstLocate = false
+                val latLng = LatLng(bdLocation.latitude, bdLocation.longitude)
+                val builder = MapStatus.Builder()
+                builder.target(latLng).zoom(20.0f)
+                baiduMap!!.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()))
             }
         }
     }

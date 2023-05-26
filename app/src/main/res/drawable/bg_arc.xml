@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 <!--  带圆弧的背景，实际上是一个圆，只显示一部分  -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--  整体背景颜色  -->
     <item>
         <shape>
             <solid android:color="#f7f8fa" />
         </shape>
     </item>
-
+    <!--  通过配置偏移来展示圆的一部分  -->
     <item
         android:end="-100dp"
         android:gravity="top"
         android:start="-100dp"
         android:top="-100dp">
+        <!-- 设置形状  -->
         <shape
             android:shape="oval"
             android:useLevel="true">
+            <!--  设置渐变背景  -->
             <gradient
                 android:startColor="#1adaab"
                 android:endColor="#0bb6b0"
@@ -22,5 +25,4 @@
             <size android:height="330dp" />
         </shape>
     </item>
-
 </layer-list>

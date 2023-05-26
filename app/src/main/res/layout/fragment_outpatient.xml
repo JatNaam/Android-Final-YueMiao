@@ -79,6 +79,7 @@
                 app:iconifiedByDefault="false"
                 app:queryBackground="@null"
                 app:submitBackground="@null" />
+            <!-- 倒数三四句用来设置输入提示语 -->
             <!-- 后两句去除下划线 -->
         </LinearLayout>
 

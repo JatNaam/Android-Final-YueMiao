@@ -116,7 +116,7 @@ class RegisterActivity : BaseActivity() {
                             putExtra("registerAccount", account)
                             putExtra("STATUS", "REGISTER")
                         }
-                        // 这里的上层活动的UI和数据没有什么需要保留的，直接以SingleTask的模式跳转活动即可
+                        // 这里的上层活动的UI状态和数据没有什么需要保留的，直接以SingleTask的模式跳转活动即可
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         startActivity(intent)
                         finish() //跳转后，销毁返回键的日志
@@ -212,10 +212,8 @@ class RegisterActivity : BaseActivity() {
      * 打开相册
      * */
     private fun openAlbum() {
-        // 打开文件选择器
-        val intent = Intent("android.intent.action.GET_CONTENT")
-        // 指定只显示照片
-        intent.type = "image/*"
+        // 以选取图片的模式打开相册
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         startActivityForResult(intent, fromAlbum)
     }
 

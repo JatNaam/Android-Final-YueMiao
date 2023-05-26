@@ -14,7 +14,6 @@ import com.permissionx.guolindev.PermissionX
 
 class ReferActivity : BaseActivity() {
 
-
     private lateinit var binding: ActivityReferBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +24,6 @@ class ReferActivity : BaseActivity() {
         binding.backHome.setOnClickListener { finish() }
 
         binding.downloadBtn.setOnClickListener {
-
             // 通过PermissionX插件动态申请写入文件需要的权限
             PermissionX.init(this)
                 .permissions(
@@ -39,7 +37,6 @@ class ReferActivity : BaseActivity() {
                         // 启动下载服务
                         val intent = Intent(this, DownloadService::class.java)
                         startService(intent)
-
                     } else {
                         Toast.makeText(
                             MyApplication.context,

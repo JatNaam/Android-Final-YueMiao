@@ -76,7 +76,7 @@ class OutpatientFragment : Fragment() {
             ActivityResultContracts.StartActivityForResult()
         ) {
             if (it.resultCode == AppCompatActivity.RESULT_OK) {
-                //获取返回的结果
+                //获取返回的当前位置结果
                 location = it.data!!.getSerializableExtra("location") as Location?
                 Log.d("MainActivity-OutpatientFragment", location.toString())
                 // 渲染返回的位置信息到UI
@@ -120,6 +120,7 @@ class OutpatientFragment : Fragment() {
                     Manifest.permission.CHANGE_WIFI_STATE
                 )
                 .request { allGranted, grantedList, deniedList ->
+                    // 如果已经全部授权
                     if (allGranted) {
                         Log.d("Location Grant：", grantedList.toString())
                         val intent = Intent(context, MapActivity::class.java)

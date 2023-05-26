@@ -15,9 +15,10 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         context = applicationContext
-        // 一定要初始化前设置，百度定位SDK隐私政策
+        // 百度定位SDK隐私政策一定要初始化SDK前设置
         SDKInitializer.setAgreePrivacy(context, true)
         LocationClient.setAgreePrivacy(true)
+        // 初始化百度SDK
         SDKInitializer.initialize(context)
         SDKInitializer.setCoordType(CoordType.BD09LL)
     }

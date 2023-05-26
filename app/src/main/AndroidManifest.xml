@@ -11,15 +11,14 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
-    <!--百度定位所需要权限，前面2个是LOCATE权限组的2个危险权限-->
+    <!-- 百度定位所需要权限 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!--百度定位所需要的普通权限-->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <!--  前台服务权限  -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <!--  usesCleartextTraffic允许HTTP请求  -->
     <application
         android:name=".MyApplication"

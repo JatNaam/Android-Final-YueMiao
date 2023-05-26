@@ -1,15 +1,18 @@
 package com.finalprogram.yuemiao.service
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.media.MediaScannerConnection
 import android.os.Binder
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.provider.MediaStore
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.finalprogram.yuemiao.MyApplication
@@ -24,46 +27,49 @@ import java.io.IOException
 import java.io.InputStream
 import kotlin.concurrent.thread
 
+
 class DownloadService : Service() {
 
-    private val mBinder = DownloadBinder()
+    // 通知管理器
+    private lateinit var mManager: NotificationManager
 
-    class DownloadBinder : Binder()
+    // 通知构造器
+    private lateinit var mBuilder: NotificationCompat.Builder
 
     override fun onBind(intent: Intent?): IBinder {
-        return mBinder
+        return Binder()
     }
-
-    private lateinit var mManager: NotificationManager
-    private lateinit var mBuilder: NotificationCompat.Builder
 
     override fun onCreate() {
         super.onCreate()
+        // 初始化通知管理器
         mManager =
             getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
     }
 
+    /**
+     * 调用startService后触发
+     */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.d("DownloadService", "onStartCommand executed")
         thread {
-            // 处理具体的逻辑
-
+            // 处理具体的服务逻辑
+            // 创建下载进度条通知
             createNotificationForProgress()
-            thread {
-                HttpUtil.sendOkHttpRequest("/resource/guide.jpg",
-                    object : Callback {
-                        override fun onFailure(call: Call, e: IOException) {
-                            updateNotificationForProgress(2)
-                        }
+            // 向服务器发起下载请求
+            HttpUtil.sendOkHttpRequest("/resource/guide.jpg",
+                object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        // 请求服务器失败，发出下载失败通知
+                        createNotificationForHigh("下载失败")
+                    }
 
-                        override fun onResponse(call: Call, response: Response) {
-                            writeToSDCard(response)
-                        }
-                    })
-            }
-
-
+                    override fun onResponse(call: Call, response: Response) {
+                        // 请求成功，将响应的图片写入内存
+                        writeToSDCard(response)
+                    }
+                })
+            // 服务完成后自动结束服务
             stopSelf()
         }
         return super.onStartCommand(intent, flags, startId)
@@ -74,21 +80,12 @@ class DownloadService : Service() {
     private val highNotificationId = 2
 
     /**
-     * 重要通知，有悬浮弹出提示的通知
+     * 下载完成通知（重要通知，有悬浮弹出提示的通知）
      */
+    @SuppressLint("IntentReset")
     private fun createNotificationForHigh(downloadResult: String) {
         // 删除进度条通知
         mManager.cancel(progressNotificationId)
-        // 打开文件选择器
-        val intent = Intent("android.intent.action.GET_CONTENT")
-        // 指定只显示照片
-        intent.type = "image/*"
-        val pendingIntent = PendingIntent.getActivity(
-            MyApplication.context,
-            0,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "重要通知id",
@@ -103,21 +100,32 @@ class DownloadService : Service() {
             .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher))
             .setSmallIcon(R.drawable.notice)
             .setAutoCancel(true)
-
-        if (downloadResult == "下载完成")
+        if (downloadResult == "下载完成") {
+            // 打开相册
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            val pendingIntent = PendingIntent.getActivity(
+                MyApplication.context,
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
             mBuilder.addAction(R.mipmap.ic_launcher, "去看看", pendingIntent)// 通知上的操作
                 .setContentIntent(pendingIntent) // 跳转配置
+        }
         mManager.notify(highNotificationId, mBuilder.build())
     }
 
     /**
-     * 进度条通知
+     * 下载进度条通知
      */
     private fun createNotificationForProgress() {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel =
-                NotificationChannel("进度条id", "进度条通知", NotificationManager.IMPORTANCE_HIGH)
+                NotificationChannel(
+                    "进度条id",
+                    "进度条通知",
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
             channel.setShowBadge(true)
             mManager.createNotificationChannel(channel)
         }
@@ -127,38 +135,23 @@ class DownloadService : Service() {
             .setContentText("开始下载")
             .setSmallIcon(R.drawable.notice)
             .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher))
-            // 第3个参数indeterminate，false表示确定的进度，比如100，true表示不确定的进度，会一直显示进度动画，直到更新状态下载完成，或删除通知
+            // 第3个参数indeterminate，false表示确定的进度，比如100，
+            // true表示不确定的进度，会一直显示进度动画，直到更新状态下载完成，或删除通知
             .setProgress(progressMax, progressNotificationId, false)
-
-        mManager.notify(1, mBuilder.build())
+        mManager.notify(progressNotificationId, mBuilder.build())
     }
 
     /**
-     * 更新进度条通知
-     * 1.更新进度：修改进度值即可
-     * 2.下载完成：总进度与当前进度都设置为0即可，同时更新文案
+     * 更新下载进度条通知
      *
-     * @param op 1为更新进度，2为下载失败
+     * @param progressCurrent 下载进度
      */
-    private fun updateNotificationForProgress(op: Int, progressCurrent: Int = -1) {
+    private fun updateNotificationForProgress(progressCurrent: Int) {
         if (::mBuilder.isInitialized) {
             val progressMax = 100
-            // 1.更新进度
-            if (op == 1) {
-                mBuilder.setContentText("下载中：$progressCurrent%")
-                    .setProgress(progressMax, progressCurrent, false)
-                mManager.notify(progressNotificationId, mBuilder.build())
-            }
-            // 2.下载结束
-            else if (op == 2) {
-                if (progressCurrent == -1) {
-                    mBuilder.setContentTitle("下载失败")
-                        .setProgress(0, 0, false)
-                    mManager.notify(progressNotificationId, mBuilder.build())
-                    createNotificationForHigh("下载失败")
-                } else createNotificationForHigh("下载完成")
-            }
-
+            mBuilder.setContentText("下载中：$progressCurrent%")
+                .setProgress(progressMax, progressCurrent, false)
+            mManager.notify(progressNotificationId, mBuilder.build())
         }
     }
 
@@ -172,45 +165,37 @@ class DownloadService : Service() {
          val fileName = "wj.jpg"
          val file = File(save_Path,fileName)*/
         // 2.SD卡 不会随着app消失而消失，内部存储
-        val savePath = Environment.getExternalStorageDirectory().absolutePath + "/Download/"
-        //文件夹
-        val dir = File(savePath)
+        val savePath =
+            Environment.getExternalStorageDirectory().absolutePath + "/Download/"
+        val dir = File(savePath) //文件夹
         //文件夹不存在则创建
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
-        //连接字符串，形成保存的文件名
-        val sb = StringBuilder()
-        sb.append(System.currentTimeMillis()).append(".jpg")
-        val fileName = sb.toString()
-        //创建文件
-        val file = File(dir, fileName)
-        //输入输出流
-        //读取到磁盘速度
-        val fileReader = ByteArray(4096)
-        //文件资源总大小
-        val fileSize = response.body!!.contentLength()
-        //当前下载的资源大小
-        var sum: Long = 0
-        //获取资源
-        val inputStream: InputStream = response.body?.byteStream()!!
-        //文件输出流
-        val fileOutputStream = FileOutputStream(file)
-        //读取的长度
-        var read: Int
+        if (!dir.exists()) dir.mkdirs()
+        val fileName = System.currentTimeMillis().toString()
+        val sb = StringBuilder() //连接字符串，形成保存的文件名
+        sb.append(fileName).append(".jpg")
+        val file = File(dir, sb.toString()) //创建文件
+        val fileReader = ByteArray(4096) //读取到磁盘速度
+        val fileSize = response.body!!.contentLength() //请求响应的文件资源总大小
+        val inputStream: InputStream = response.body?.byteStream()!! //获取资源输入流
+        val fileOutputStream = FileOutputStream(file) //文件输出流
+        var sum: Long = 0 //当前下载的资源大小
+        var read: Int //读取的长度
         while (inputStream.read(fileReader).also { read = it } != -1) {
-            //写入本地文件
-            fileOutputStream.write(fileReader, 0, read)
-            //获取当前进度
+            fileOutputStream.write(fileReader, 0, read) //写入本地文件
+            //获取当前进度并更新下载进度条通知
             sum += read.toLong()
             val progress = (sum * 1.0 / fileSize * 100).toInt()
-            // 更新进度消息
-            updateNotificationForProgress(1, progress)
+            updateNotificationForProgress(progress)
         }
-        //结束后，刷新清空文件流
-        fileOutputStream.flush()
-        //结束后，发送下载成功信息
-        updateNotificationForProgress(2, 1)
+        fileOutputStream.flush() //结束后，刷新清空文件流
+        createNotificationForHigh("下载完成") //结束后，发送下载成功信息
+        // 通知系统媒体库更新
+        MediaScannerConnection.scanFile(
+            MyApplication.context,
+            arrayOf(file.absolutePath),
+            null,
+            null
+        )
         //最后关闭流，防止内存泄露
         inputStream.close()
         fileOutputStream.close()
