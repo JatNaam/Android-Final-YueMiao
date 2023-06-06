@@ -3,6 +3,7 @@ package com.finalprogram.yuemiao.ui.outpatient
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
@@ -36,9 +37,11 @@ class MapActivity : BaseActivity() {
             : LocationClient? = null
     private var baiduMap: BaiduMap? = null
 
-    private var isFirstLocate = true
-
     private var location: Location? = null
+
+    private var address: String? = null
+
+    private var hasSearched = false
 
     // POI检索实例
     private var mPoiSearch: PoiSearch? = null
@@ -71,6 +74,7 @@ class MapActivity : BaseActivity() {
         binding.relocate.setOnClickListener {
             mLocationClient!!.stop()
             binding.tvAdd.text = "定位中"
+            hasSearched = false
             requestLocation()
         }
 
@@ -86,14 +90,13 @@ class MapActivity : BaseActivity() {
                  *  pageNum 分页页码
                  */
                 mPoiSearch!!.searchInCity(
-                    PoiCitySearchOption()
-                        .city(query) //必填
+                    PoiCitySearchOption().city(query) //必填
                         .keyword("健康服务中心") //必填
-                        .pageNum(0)
-                        .pageCapacity(10)
+                        .pageNum(0).pageCapacity(10)
                 )
                 // 收起软键盘
                 hideKeyboard(binding.searchView)
+                hasSearched = true
                 return true
             }
 
@@ -113,12 +116,26 @@ class MapActivity : BaseActivity() {
             // POI检索结果的回调
             override fun onGetPoiResult(poiResult: PoiResult) {
                 binding.poiRecycleList.adapter = PoiAdapter(poiResult.allPoi)
+                // 已经自动定位过了
+                if (hasSearched) {
+                    val location1 = poiResult.allPoi[0].location
+                    location = Location(
+                        poiResult.allPoi[0].city,
+                        poiResult.allPoi[0].area,
+                        location1.longitude,
+                        location1.latitude
+                    )
+                    address =
+                        poiResult.allPoi[0].province + poiResult.allPoi[0].city + poiResult.allPoi[0].area
+                    mLocationClient!!.stop()
+                    requestLocation()
+                }
+
                 // 检索poi结果的详细信息
                 val uids = StringBuffer()
                 poiResult.allPoi.forEach { run { uids.append(it.uid).append(",") } }
                 mPoiSearch!!.searchPoiDetail(
-                    PoiDetailSearchOption()
-                        .poiUids(uids.toString())
+                    PoiDetailSearchOption().poiUids(uids.toString())
                 ) // uid的集合，最多可以传入10个uid，多个uid之间用英文逗号分隔。
             }
 
@@ -132,7 +149,8 @@ class MapActivity : BaseActivity() {
 
             //废弃
             @Deprecated("Deprecated in Java")
-            override fun onGetPoiDetailResult(poiDetailResult: PoiDetailResult){}
+            override fun onGetPoiDetailResult(poiDetailResult: PoiDetailResult) {
+            }
         })
 
         try {
@@ -174,42 +192,38 @@ class MapActivity : BaseActivity() {
     //内部类，百度位置监听器
     inner class MyLocationListener : BDAbstractLocationListener() {
         override fun onReceiveLocation(bdLocation: BDLocation) {
-            // 渲染当前详情地址到UI
-            binding.tvAdd.text = bdLocation.addrStr
-            // 保留当前位置城市、区县和经纬度
-            location = Location(
-                bdLocation.city,
-                bdLocation.district,
-                bdLocation.longitude,
-                bdLocation.latitude
-            )
-            /**
-             *  PoiCiySearchOption 设置检索属性
-             *  city 检索城市
-             *  keyword 检索内容关键字
-             *  pageNum 分页页码
-             */
-            mPoiSearch!!.searchInCity(
-                PoiCitySearchOption()
-                    .city(bdLocation.city) //必填
-                    .keyword("健康服务中心") //必填
-                    .pageNum(0)
-                    .pageCapacity(10)
-            )
+            // 自动定位
+            if (!hasSearched) {
+                // 渲染当前详情地址到UI
+                binding.tvAdd.text = bdLocation.addrStr
+                // 保留当前位置城市、区县和经纬度
+                location = Location(
+                    bdLocation.city, bdLocation.district, bdLocation.longitude, bdLocation.latitude
+                )
+                /**
+                 *  PoiCiySearchOption 设置检索属性
+                 *  city 检索城市
+                 *  keyword 检索内容关键字
+                 *  pageNum 分页页码
+                 */
+                mPoiSearch!!.searchInCity(
+                    PoiCitySearchOption().city(bdLocation.city) //必填
+                        .keyword("健康服务中心") //必填
+                        .pageNum(0).pageCapacity(10)
+                )
+            } else {
+                binding.tvAdd.text = address
+            }
+
             // 显示自身位置的蓝点箭头
-            val locData = MyLocationData.Builder()
-                .accuracy(bdLocation.radius)// 设置定位数据的精度信息，单位：米
+            val locData = MyLocationData.Builder().accuracy(bdLocation.radius)// 设置定位数据的精度信息，单位：米
                 .direction(bdLocation.direction) // 此处设置开发者获取到的方向信息，顺时针0-360
-                .latitude(bdLocation.latitude)
-                .longitude(bdLocation.longitude)
-                .build()
+                .latitude(location!!.latitude).longitude(location!!.longitude).build()
             // 设置定位数据, 只有先允许定位图层后设置数据才会生效
             baiduMap!!.setMyLocationData(locData)
-            if (bdLocation.locType == BDLocation.TypeGpsLocation ||
-                bdLocation.locType == BDLocation.TypeNetWorkLocation
-            ) if (isFirstLocate) {
-                isFirstLocate = false
-                val latLng = LatLng(bdLocation.latitude, bdLocation.longitude)
+
+            if (bdLocation.locType == BDLocation.TypeGpsLocation || bdLocation.locType == BDLocation.TypeNetWorkLocation) {
+                val latLng = LatLng(location!!.latitude, location!!.longitude)
                 val builder = MapStatus.Builder()
                 builder.target(latLng).zoom(20.0f)
                 baiduMap!!.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()))
@@ -224,8 +238,7 @@ class MapActivity : BaseActivity() {
         val inputMethodManager =
             this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(
-            view.windowToken,
-            InputMethodManager.HIDE_NOT_ALWAYS
+            view.windowToken, InputMethodManager.HIDE_NOT_ALWAYS
         )
     }
 
